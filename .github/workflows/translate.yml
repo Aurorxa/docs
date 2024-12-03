@@ -148,7 +148,7 @@ jobs:
             try {
               const response = await client.FileTranslate(params);
               console.log('提交文件翻译任务的 response', response);
-              return response?.data?.taskId;
+              return response?.Data?.TaskId;
             } catch (err) {
               console.error('Failed to submit translation request:', err.message);
               return null;
