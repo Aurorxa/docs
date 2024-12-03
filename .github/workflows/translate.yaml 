@@ -1,4 +1,4 @@
-name: Update Change Log
+name: Translate
 
 on:
     workflow_dispatch:
