@@ -100,6 +100,7 @@ jobs:
           console.log('toLang:', toLang);
           console.log('secretId:', secretId);
           console.log('secretKey:', secretKey);
+          console.log('region:', region);
 
           // 配置
           const TmtClient = tencentcloud.tmt.v20180321.Client;
