@@ -13,7 +13,7 @@ lastUpdated: true
 head:
   - - meta
     - name: description
-      content: r-nacos docs
+      content: r-nacos R-Nacos nacos
   - - meta
     - name: keywords
       content: r-nacos R-Nacos nacos
