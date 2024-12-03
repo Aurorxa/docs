@@ -42,6 +42,9 @@ jobs:
            sudo apt-get update -y
            sudo apt-get install -y tree
            tree
+      - name: Debug Inputs
+        run: |
+          echo "Input target_dir: '${{ inputs.target_dir }}'"          
       - name: Ensure Target Directory Exists
         run: |
           if [ ! -d "${{ inputs.target_dir }}" ]; then
