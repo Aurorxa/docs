@@ -81,7 +81,7 @@ jobs:
           endpoint: ${{ secrets.TENCENT_ENDPOINT }}
         run: |
           node -e "
-          const delay = 12 * 60 * 1000 
+          const delay = 5 * 60 * 1000 
           const fs = require('fs');
           const path = require('path');
           const crypto = require('crypto');
@@ -210,7 +210,7 @@ jobs:
                     // 查询翻译结果
                     let result = null;
                     while (true) {
-                      result = await queryTranslationResult(taskId);
+                      result = await queryTranslationResultDebounced(taskId);
 
                       if (result && result.Status === 'success') {
                         console.log(`Translation successful for ${fullPath}`);
