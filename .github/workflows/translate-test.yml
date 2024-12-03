@@ -24,13 +24,6 @@ on:
         required: false
         default: 'en'
 
-env:
-  SOURCE_DIR: ${{ inputs.source_dir }}
-  TARGET_DIR: ${{ inputs.target_dir }}
-  FROM_LANG: ${{ inputs.from_lang }}
-  TO_LANG: ${{ inputs.to_lang }}
-  YOUDAO_APP_KEY: ${{ secrets.YOUDAO_APP_KEY }}
-  YOUDAO_SECRET: ${{ secrets.YOUDAO_SECRET }}
 
 jobs:
   translate:
@@ -74,12 +67,12 @@ jobs:
           const axios = require('axios');
           const crypto = require('crypto');
 
-          const directoryPath = process.env.SOURCE_DIR;
-          const targetPath = process.env.TARGET_DIR;
-          const fromLang = process.env.FROM_LANG;
-          const toLang = process.env.TO_LANG;
-          const appKey = process.env.YOUDAO_APP_KEY;
-          const secret = process.env.YOUDAO_SECRET;
+          const directoryPath = ${{ inputs.source_dir }}
+          const targetPath = ${{ inputs.target_dir }}
+          const fromLang = ${{ inputs.from_lang }}
+          const toLang = ${{ inputs.to_lang }}
+          const appKey = ${{ secrets.YOUDAO_APP_KEY }}
+          const secret = ${{ secrets.YOUDAO_SECRET }}
 
           function generateSign(query, salt) {
             return crypto.createHash('md5').update(appKey + query + salt + secret).digest('hex');
