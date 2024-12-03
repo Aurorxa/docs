@@ -86,7 +86,7 @@ jobs:
           const crypto = require('crypto');
           const tencentcloud = require('tencentcloud-sdk-nodejs');
 
-          # 参数
+          // 参数
           const directoryPath = process.env.SOURCE_DIR ;
           const targetPath = process.env.TARGET_DIR ;
           const fromLang = process.env.FROM_LANG ;
@@ -101,6 +101,7 @@ jobs:
           console.log('secretId:', secretId);
           console.log('secretKey:', secretKey);
 
+          // 配置
           const TmtClient = tencentcloud.tmt.v20180321.Client;
           const clientConfig = {
               credential: {
@@ -114,6 +115,7 @@ jobs:
                 },
               },
           };  
+
           // 实例化要请求产品的client对象,clientProfile是可选的
           const client = new TmtClient(clientConfig);  
 
