@@ -1,0 +1,30 @@
+name: Update Change Log
+
+on:
+    workflow_dispatch:
+
+jobs:
+  update-change-log:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+            fetch-depth: 1
+      - name: Auto Translate
+        uses: offensive-vk/auto-translate@v7
+        with:
+            file: './docs/notes'
+            language: 'es'           
+      - name: 查看翻译后的文件
+        run: |
+           apt -y update && apt -y upgrade 
+           apt -y install tree
+           tree
+
+       
+ 
+    
+
+
