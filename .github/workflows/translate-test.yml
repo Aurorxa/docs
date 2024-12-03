@@ -58,7 +58,7 @@ jobs:
           node-version: 22.11.0  
       - name: Install Axios for HTTP Requests
         run: npm install axios
-      - name: Setup environment variables
+      - name: Translate Markdown Files
         env:
           SOURCE_DIR: ${{ github.event.inputs.source_dir }}
           TARGET_DIR: ${{ github.event.inputs.target_dir }}
@@ -66,9 +66,6 @@ jobs:
           TO_LANG: ${{ github.event.inputs.to_lang }}
           YOUDAO_APP_KEY: ${{ secrets.YOUDAO_APP_KEY }}
           YOUDAO_SECRET: ${{ secrets.YOUDAO_SECRET }}
-        run: |
-          echo "Environment variables set"
-      - name: Translate Markdown Files
         run: |
           node -e "
           const fs = require('fs');
