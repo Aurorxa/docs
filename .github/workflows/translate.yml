@@ -236,4 +236,6 @@ jobs:
           "
       - name: 查看翻译后的文件
         run: |
-          tree
+          tree docs/en
+          cat docs/en/quick_started/index.md
+
