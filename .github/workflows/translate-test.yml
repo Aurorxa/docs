@@ -16,9 +16,9 @@ on:
         required: false
         default: 'docs/en'
       from_lang:
-        description: "Language to translate from (e.g., zh-cn)"
+        description: "Language to translate from (e.g.,zh-CHS)"
         required: false
-        default: 'zh-cn'
+        default: 'zh-CHS'
       to_lang:
         description: "Language to translate to (e.g., en)"
         required: false
@@ -31,7 +31,7 @@ env:
   TO_LANG: ${{ inputs.to_lang }}
   YOUDAO_APP_KEY: ${{ secrets.YOUDAO_APP_KEY }}
   YOUDAO_SECRET: ${{ secrets.YOUDAO_SECRET }}
-  
+
 jobs:
   translate:
     runs-on: ubuntu-latest
