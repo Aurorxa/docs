@@ -75,10 +75,10 @@ jobs:
           TARGET_DIR: ${{ github.event.inputs.target_dir }}
           FROM_LANG: ${{ github.event.inputs.from_lang }}
           TO_LANG: ${{ github.event.inputs.to_lang }}
-          Secret_Id: ${{ secrets.Tencent_Secret_Id }}
-          Secret_Key: ${{ secrets.Tencent_Secret_Key }}
-          region: ${{ secrets.Tencent_Region }}
-          endpoint: ${{ secrets.Tencent_Endpoint }}
+          Secret_Id: ${{ secrets.TENCENT_SECRET_ID }}
+          Secret_Key: ${{ secrets.TENCENT_SECRET_KEY }}
+          region: ${{ secrets.TENCENT_REGION }}
+          endpoint: ${{ secrets.TENCENT_ENDPOINT }}
         run: |
           node -e "
           const fs = require('fs');
