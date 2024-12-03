@@ -40,10 +40,13 @@ jobs:
             fetch-depth: 1
       - name: Install Node.js
         uses: actions/setup-node@v4
-        # with:
-        #   node-version: 18  
+        with:
+          node-version: 22.11.0  
       - name: Install Translation Dependencies
         run: |
+           sudo apt-get update -y
+           sudo apt-get install -y tree
+           tree
            npm install google-translate-api
       - name: Ensure Target Directory Exists
         run: |
@@ -97,8 +100,6 @@ jobs:
           "    
       - name: 查看翻译后的文件
         run: |
-           sudo apt-get update -y
-           sudo apt-get install -y tree
            tree
        
  
