@@ -18,7 +18,7 @@ jobs:
       - name: Auto Translate
         uses: offensive-vk/auto-translate@v7
         with:
-            file: 'docs/notes/'
+            file: 'docs/**/*.md'
             language: 'es'           
       - name: 查看翻译后的文件
         run: |
