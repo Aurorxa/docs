@@ -81,6 +81,7 @@ jobs:
           endpoint: ${{ secrets.TENCENT_ENDPOINT }}
         run: |
           node -e "
+          const delay = 5 * 60 * 60 
           const fs = require('fs');
           const path = require('path');
           const crypto = require('crypto');
@@ -119,12 +120,23 @@ jobs:
                 },
               },
           };  
+          // 防抖函数            
+          function debounce(func, delay) {
+            let timer;
+            return function (...args) {
+              clearTimeout(timer);
+              timer = setTimeout(() => {
+                func.apply(this, args);
+              }, delay);
+            };
+          }
+
 
           // 实例化要请求产品的client对象,clientProfile是可选的
           const client = new TmtClient(clientConfig);  
 
           // 提交文件翻译任务
-          async function translateFile(content) {
+          const translateFileDebounced = debounce(async (content) => {
             const params = {
               Source: fromLang,
               Target: toLang,
@@ -135,31 +147,28 @@ jobs:
 
             try {
               const response = await client.FileTranslate(params);
-              console.log('提交文件翻译任务的 response',response)
-              // 请求后暂停 1 秒
-              await new Promise((resolve) => setTimeout(resolve, 1000));
+              console.log('提交文件翻译任务的 response', response);
               return response?.data?.taskId;
             } catch (err) {
               console.error('Failed to submit translation request:', err.message);
               return null;
             }
-          }
+          }, delay); // 防抖延时 1 秒
+
 
           // 查询翻译任务状态
-          async function queryTranslationResult(taskId) {
+          const queryTranslationResultDebounced = debounce(async (taskId) => {
             const params = { TaskId: taskId };
 
             try {
               const response = await client.GetFileTranslate(params);
-              console.log('查询翻译任务状态的 response',response)
-              // 查询后暂停 1 秒
-              await new Promise((resolve) => setTimeout(resolve, 1000));
+              console.log('查询翻译任务状态的 response', response);
               return response;
             } catch (err) {
               console.error('Failed to query translation result:', err.message);
               return null;
             }
-          }
+          }, delay); // 防抖延时 1 秒
            
           // 文件分批处理逻辑
           function splitIntoBatches(array, batchSize) {
@@ -189,7 +198,7 @@ jobs:
                     const content = fs.readFileSync(fullPath, 'utf8');
                     const base64Content = Buffer.from(content).toString('base64'); // 转换为 Base64
                     // 请求翻译结果
-                    const taskId = await translateFile(base64Content);
+                    const taskId = await translateFileDebounced(base64Content);
 
                     if (!taskId) {
                       console.error(`Failed to submit translation task for ${fullPath}`);
@@ -201,7 +210,7 @@ jobs:
                     // 查询翻译结果
                     let result = null;
                     while (true) {
-                      result = await queryTranslationResult(taskId);
+                      result = await queryTranslationResultDebounced(taskId);
 
                       if (result && result.Status === 'success') {
                         console.log(`Translation successful for ${fullPath}`);
@@ -225,7 +234,7 @@ jobs:
                  }
                 }
                  // 每批处理后延时 1 秒
-                await new Promise((resolve) => setTimeout(resolve, 1000));
+                await new Promise((resolve) => setTimeout(resolve, delay));
               }
 
               (async () => {
@@ -238,4 +247,3 @@ jobs:
         run: |
           tree docs/en
           cat docs/en/quick_started/index.md
-
