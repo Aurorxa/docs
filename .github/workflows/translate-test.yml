@@ -1,10 +1,10 @@
 name: Translate-test
 
 on:
-  push:
-    branches:
-      - main
-      - master
+  # push:
+  #   branches:
+  #     - main
+  #     - master
   workflow_dispatch:
     inputs:
       source_dir:
