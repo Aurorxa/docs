@@ -60,6 +60,10 @@ jobs:
         run: npm install axios
       - name: Setup environment variables
         env:
+          SOURCE_DIR: ${{ github.event.inputs.source_dir }}
+          TARGET_DIR: ${{ github.event.inputs.target_dir }}
+          FROM_LANG: ${{ github.event.inputs.from_lang }}
+          TO_LANG: ${{ github.event.inputs.to_lang }}
           YOUDAO_APP_KEY: ${{ secrets.YOUDAO_APP_KEY }}
           YOUDAO_SECRET: ${{ secrets.YOUDAO_SECRET }}
         run: |
@@ -72,12 +76,16 @@ jobs:
           const axios = require('axios');
           const crypto = require('crypto');
 
-          const directoryPath = ${{ github.event.inputs.source_dir }}
-          const targetPath = ${{ github.event.inputs.target_dir }}
-          const fromLang = ${{ github.event.inputs.from_lang }}
-          const toLang = ${{ github.event.inputs.to_lang }}
+          const directoryPath = process.env.SOURCE_DIR ;
+          const targetPath = process.env.TARGET_DIR ;
+          const fromLang = process.env.FROM_LANG ;
+          const toLang = process.env.TO_LANG ;
           const appKey = process.env.YOUDAO_APP_KEY;
           const secret = process.env.YOUDAO_SECRET;
+          console.log('directoryPath:', directoryPath);
+          console.log('targetPath:', targetPath);
+          console.log('fromLang:', fromLang);
+          console.log('toLang:', toLang);
           console.log('App Key:', appKey);
           console.log('Secret:', secret);
 
