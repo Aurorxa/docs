@@ -9,7 +9,7 @@ on:
   #  pull_request:
   workflow_dispatch:
   workflow_run:
-    workflows: ["Update Change Log", "Update Change Log2"] # 允许被 "Update Change Log2" 触发
+    workflows: ["Update Change Log", "Update Change Log2","Translate"] # 允许被 "Update Change Log2" 触发
     types:
       - completed
 
