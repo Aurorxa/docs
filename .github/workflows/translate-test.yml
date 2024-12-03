@@ -56,6 +56,8 @@ jobs:
 
           const targetPath = process.env.TARGET_DIR;
 
+          console.log('targetPath ==>',targetPath);
+
           try {
             fs.mkdirSync(targetPath, { recursive: true });
             console.log(\`Target directory \${targetPath} is ready.\`);
