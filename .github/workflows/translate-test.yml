@@ -42,19 +42,14 @@ jobs:
            sudo apt-get update -y
            sudo apt-get install -y tree
            tree
-      # - name: Ensure Target Directory Exists
-      #   run: |
-      #     if [ -z "${{ env.TARGET_DIR }}" ]; then
-      #       echo "TARGET_DIR is empty. Please specify a valid directory."
-      #       exit 1
-      #     fi
-
-      #     if [ ! -d "${{ env.TARGET_DIR }}" ]; then
-      #       mkdir -p "${{ env.TARGET_DIR }}"
-      #       echo "Target directory ${{ env.TARGET_DIR }} created."
-      #     else
-      #       echo "Target directory ${{ env.TARGET_DIR }} already exists."
-      #     fi
+      - name: Ensure Target Directory Exists
+        run: |
+          if [ ! -d "${{ inputs.target_dir }}" ]; then
+            mkdir -pv "${{ inputs.target_dir }}"
+            echo "Target directory ${{ inputs.target_dir }} created."
+          else
+            echo "Target directory ${{ inputs.target_dir }} already exists."
+          fi
 
       - name: Install Axios for HTTP Requests
         run: npm install axios
