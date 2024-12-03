@@ -78,6 +78,7 @@ jobs:
           Secret_Id: ${{ secrets.Tencent_Secret_Id }}
           Secret_Key: ${{ secrets.Tencent_Secret_Key }}
           region: ${{ secrets.Tencent_Region }}
+          endpoint: ${{ secrets.Tencent_Endpoint }}
         run: |
           node -e "
           const fs = require('fs');
@@ -93,6 +94,7 @@ jobs:
           const secretId = process.env.Secret_Id;
           const secretKey = process.env.Secret_Key;
           const region = process.env.region;
+          const endpoint = process.env.endpoint;
 
           console.log('directoryPath:', directoryPath);
           console.log('targetPath:', targetPath);
@@ -101,6 +103,7 @@ jobs:
           console.log('secretId:', secretId);
           console.log('secretKey:', secretKey);
           console.log('region:', region);
+          console.log('endpoint:', endpoint);
 
           // 配置
           const TmtClient = tencentcloud.tmt.v20180321.Client;
@@ -112,7 +115,7 @@ jobs:
               region,
               profile: {
                 httpProfile: {
-                  endpoint: "tmt.tencentcloudapi.com",
+                  endpoint,
                 },
               },
           };  
