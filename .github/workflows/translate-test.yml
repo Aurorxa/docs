@@ -58,7 +58,12 @@ jobs:
           node-version: 22.11.0  
       - name: Install Axios for HTTP Requests
         run: npm install axios
-
+      - name: Setup environment variables
+        env:
+          YOUDAO_APP_KEY: ${{ secrets.YOUDAO_APP_KEY }}
+          YOUDAO_SECRET: ${{ secrets.YOUDAO_SECRET }}
+        run: |
+          echo "Environment variables set"
       - name: Translate Markdown Files
         run: |
           node -e "
@@ -71,8 +76,10 @@ jobs:
           const targetPath = ${{ github.event.inputs.target_dir }}
           const fromLang = ${{ github.event.inputs.from_lang }}
           const toLang = ${{ github.event.inputs.to_lang }}
-          const appKey = ${{ secrets.YOUDAO_APP_KEY }}
-          const secret = ${{ secrets.YOUDAO_SECRET }}
+          const appKey = process.env.YOUDAO_APP_KEY;
+          const secret = process.env.YOUDAO_SECRET;
+          console.log('App Key:', appKey);
+          console.log('Secret:', secret);
 
           function generateSign(query, salt) {
             return crypto.createHash('md5').update(appKey + query + salt + secret).digest('hex');
