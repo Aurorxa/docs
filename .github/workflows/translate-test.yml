@@ -52,13 +52,16 @@ jobs:
         run: |
           node -e "
           const fs = require('fs');
+          const path = require('path');
+
           const targetPath = process.env.TARGET_DIR;
 
-          if (!fs.existsSync(targetPath)) {
+          try {
             fs.mkdirSync(targetPath, { recursive: true });
-            console.log(\`Target directory \${targetPath} created.\`);
-          } else {
-            console.log(\`Target directory \${targetPath} already exists.\`);
+            console.log(\`Target directory \${targetPath} is ready.\`);
+          } catch (err) {
+            console.error(\`Failed to create target directory \${targetPath}: \`, err);
+            process.exit(1);
           }
           "                
       - name: Translate Markdown Files
