@@ -22,9 +22,10 @@ jobs:
             language: 'es'           
       - name: 查看翻译后的文件
         run: |
-           sudo apt -y update && apt -y upgrade 
-           sudo apt -y install tree
-           sudo tree
+           sudo apt-get update -y
+           sudo apt-get upgrade -y
+           sudo apt-get install -y tree
+           tree
        
  
     
