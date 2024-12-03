@@ -51,6 +51,11 @@ jobs:
            tree
       - name: Ensure Target Directory Exists
         run: |
+          if [ -z "${{ env.TARGET_DIR }}" ]; then
+            echo "TARGET_DIR is empty. Please specify a valid directory."
+            exit 1
+          fi
+
           if [ ! -d "${{ env.TARGET_DIR }}" ]; then
             mkdir -p "${{ env.TARGET_DIR }}"
             echo "Target directory ${{ env.TARGET_DIR }} created."
