@@ -92,6 +92,7 @@ jobs:
           const toLang = process.env.TO_LANG ;
           const secretId = process.env.Secret_Id;
           const secretKey = process.env.Secret_Key;
+          const region = process.env.region;
 
           console.log('directoryPath:', directoryPath);
           console.log('targetPath:', targetPath);
