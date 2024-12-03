@@ -9,19 +9,19 @@ on:
     inputs:
       source_dir:
         description: "Source directory containing Markdown files"
-        required: false
+        required: true
         default: 'docs/notes'
       target_dir:
         description: "Target directory for translated Markdown files"
-        required: false
+        required: true
         default: 'docs/en'
       from_lang:
         description: "Language to translate from (e.g.,zh-CHS)"
-        required: false
+        required: true
         default: 'zh-CHS'
       to_lang:
         description: "Language to translate to (e.g., en)"
-        required: false
+        required: true
         default: 'en'
 
 
@@ -44,14 +44,14 @@ jobs:
            tree
       - name: Debug Inputs
         run: |
-          echo "Input target_dir: '${{ github.event.inputs.target_dir }}'"          
+          echo Input target_dir: ${{ inputs.target_dir }}       
       - name: Ensure Target Directory Exists
         run: |
           if [ ! -d "${{ inputs.target_dir }}" ]; then
-            mkdir -pv "${{ github.event.inputs.target_dir }}"
-            echo "Target directory ${{ github.event.inputs.target_dir }} created."
+            mkdir -pv "${{ inputs.target_dir }}"
+            echo "Target directory ${{ inputs.target_dir }} created."
           else
-            echo "Target directory ${{ github.event.inputs.target_dir }} already exists."
+            echo "Target directory ${{ inputs.target_dir }} already exists."
           fi
 
       - name: Install Axios for HTTP Requests
@@ -65,10 +65,10 @@ jobs:
           const axios = require('axios');
           const crypto = require('crypto');
 
-          const directoryPath = ${{ github.event.inputs.source_dir }}
-          const targetPath = ${{ github.event.inputs.target_dir }}
-          const fromLang = ${{ github.event.inputs.from_lang }}
-          const toLang = ${{ github.event.inputs.to_lang }}
+          const directoryPath = ${{ inputs.source_dir }}
+          const targetPath = ${{ inputs.target_dir }}
+          const fromLang = ${{ inputs.from_lang }}
+          const toLang = ${{ inputs.to_lang }}
           const appKey = ${{ secrets.YOUDAO_APP_KEY }}
           const secret = ${{ secrets.YOUDAO_SECRET }}
 
