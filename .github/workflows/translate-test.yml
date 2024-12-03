@@ -10,15 +10,15 @@ on:
       source_dir:
         description: "Source directory containing Markdown files"
         required: false
-        default: './docs/notes'
+        default: 'docs/notes'
       target_dir:
         description: "Target directory for translated Markdown files"
         required: false
-        default: './docs/en'
+        default: 'docs/en'
       from_lang:
-        description: "Language to translate from (e.g., zh)"
+        description: "Language to translate from (e.g., zh-cn)"
         required: false
-        default: 'zh'
+        default: 'zh-cn'
       to_lang:
         description: "Language to translate to (e.g., en)"
         required: false
