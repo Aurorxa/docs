@@ -59,6 +59,8 @@ jobs:
             echo "Source directory ${{ github.event.inputs.source_dir }} does not exist."
             exit 1
           fi
+          # 查看所有文件
+          tree
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
