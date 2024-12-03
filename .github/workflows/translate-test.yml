@@ -49,7 +49,6 @@ jobs:
            sudo apt-get update -y
            sudo apt-get install -y tree
            tree
-
       - name: Ensure Target Directory Exists
         run: |
           if [ ! -d "${{ env.TARGET_DIR }}" ]; then
@@ -59,86 +58,86 @@ jobs:
             echo "Target directory ${{ env.TARGET_DIR }} already exists."
           fi
 
-        - name: Install Axios for HTTP Requests
-          run: npm install axios
+      - name: Install Axios for HTTP Requests
+        run: npm install axios
 
-        - name: Translate Markdown Files
-          run: |
-            node -e "
-            const fs = require('fs');
-            const path = require('path');
-            const axios = require('axios');
-            const crypto = require('crypto');
+      - name: Translate Markdown Files
+        run: |
+          node -e "
+          const fs = require('fs');
+          const path = require('path');
+          const axios = require('axios');
+          const crypto = require('crypto');
 
-            const directoryPath = process.env.SOURCE_DIR;
-            const targetPath = process.env.TARGET_DIR;
-            const fromLang = process.env.FROM_LANG;
-            const toLang = process.env.TO_LANG;
-            const appKey = process.env.YOUDAO_APP_KEY;
-            const secret = process.env.YOUDAO_SECRET;
+          const directoryPath = process.env.SOURCE_DIR;
+          const targetPath = process.env.TARGET_DIR;
+          const fromLang = process.env.FROM_LANG;
+          const toLang = process.env.TO_LANG;
+          const appKey = process.env.YOUDAO_APP_KEY;
+          const secret = process.env.YOUDAO_SECRET;
 
-            function generateSign(query, salt) {
-              return crypto.createHash('md5').update(appKey + query + salt + secret).digest('hex');
-            }
+          function generateSign(query, salt) {
+            return crypto.createHash('md5').update(appKey + query + salt + secret).digest('hex');
+          }
 
-            async function translateText(query) {
-              const salt = new Date().getTime();
-              const sign = generateSign(query, salt);
-              const url = 'https://openapi.youdao.com/api';
+          async function translateText(query) {
+            const salt = new Date().getTime();
+            const sign = generateSign(query, salt);
+            const url = 'https://openapi.youdao.com/api';
 
-              const params = {
-                q: query,
-                appKey: appKey,
-                salt: salt,
-                from: fromLang,
-                to: toLang,
-                sign: sign,
-              };
+            const params = {
+              q: query,
+              appKey: appKey,
+              salt: salt,
+              from: fromLang,
+              to: toLang,
+              sign: sign,
+            };
 
-              try {
-                const response = await axios.get(url, { params });
-                if (response.data && response.data.translation) {
-                  return response.data.translation.join('\\n');
-                } else {
-                  console.error('Translation error:', response.data);
-                  return '';
-                }
-              } catch (err) {
-                console.error('HTTP request failed:', err.message);
+            try {
+              const response = await axios.get(url, { params });
+              if (response.data && response.data.translation) {
+                return response.data.translation.join('\\n');
+              } else {
+                console.error('Translation error:', response.data);
                 return '';
               }
+            } catch (err) {
+              console.error('HTTP request failed:', err.message);
+              return '';
             }
+          }
 
-            async function translateMarkdownFiles(dir) {
-              const files = fs.readdirSync(dir);
+          async function translateMarkdownFiles(dir) {
+            const files = fs.readdirSync(dir);
 
-              for (const file of files) {
-                const fullPath = path.join(dir, file);
-                const stat = fs.lstatSync(fullPath);
+            for (const file of files) {
+              const fullPath = path.join(dir, file);
+              const stat = fs.lstatSync(fullPath);
 
-                if (stat.isDirectory()) {
-                  await translateMarkdownFiles(fullPath);
-                } else if (file.endsWith('.md')) {
-                  const content = fs.readFileSync(fullPath, 'utf8');
-                  const translatedPath = fullPath.replace(directoryPath, targetPath);
-                  const translatedText = await translateText(content);
+              if (stat.isDirectory()) {
+                await translateMarkdownFiles(fullPath);
+              } else if (file.endsWith('.md')) {
+                const content = fs.readFileSync(fullPath, 'utf8');
+                const translatedPath = fullPath.replace(directoryPath, targetPath);
+                const translatedText = await translateText(content);
 
-                  if (translatedText) {
-                    fs.mkdirSync(path.dirname(translatedPath), { recursive: true });
-                    fs.writeFileSync(translatedPath, translatedText, 'utf8');
-                    console.log(\`Translated \${fullPath} -> \${translatedPath}\`);
-                  } else {
-                    console.error(\`Failed to translate \${fullPath}\`);
-                  }
+                if (translatedText) {
+                  fs.mkdirSync(path.dirname(translatedPath), { recursive: true });
+                  fs.writeFileSync(translatedPath, translatedText, 'utf8');
+                  console.log(\`Translated \${fullPath} -> \${translatedPath}\`);
+                } else {
+                  console.error(\`Failed to translate \${fullPath}\`);
                 }
               }
             }
+          }
 
-            (async () => {
-              console.log(\`Translating files from \${directoryPath} to \${targetPath} (\${fromLang} -> \${toLang})\`);
-              await translateMarkdownFiles(directoryPath);
-            })();
-            "    
+          (async () => {
+            console.log(\`Translating files from \${directoryPath} to \${targetPath} (\${fromLang} -> \${toLang})\`);
+            await translateMarkdownFiles(directoryPath);
+          })();
+          "    
       - name: 查看翻译后的文件
         run: |
            tree
