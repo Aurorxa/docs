@@ -136,6 +136,8 @@ jobs:
             try {
               const response = await client.FileTranslate(params);
               console.log('提交文件翻译任务的 response',response)
+              // 请求后暂停 1 秒
+              await new Promise((resolve) => setTimeout(resolve, 1000));
               return response?.data?.taskId;
             } catch (err) {
               console.error('Failed to submit translation request:', err.message);
@@ -149,17 +151,34 @@ jobs:
 
             try {
               const response = await client.GetFileTranslate(params);
-               console.log('查询翻译任务状态的 response',response)
+              console.log('查询翻译任务状态的 response',response)
+              // 查询后暂停 1 秒
+              await new Promise((resolve) => setTimeout(resolve, 1000));
               return response;
             } catch (err) {
               console.error('Failed to query translation result:', err.message);
               return null;
             }
           }
-
+           
+          // 文件分批处理逻辑
+          function splitIntoBatches(array, batchSize) {
+            const batches = [];
+            for (let i = 0; i < array.length; i += batchSize) {
+              batches.push(array.slice(i, i + batchSize));
+            }
+            return batches;
+          }
+           
+          // 文件处理逻辑
           async function processMarkdownFiles(dir) {
                 const files = fs.readdirSync(dir);
-                for (const file of files) {
+                const batches = splitIntoBatches(files, 1); // 每批处理 1 个文件
+               
+                
+                for (const batch of batches) {
+                    console.log(`Processing batch: ${batch}`); 
+                    for (const file of files) {
                   const fullPath = path.join(dir, file);
                   const stat = fs.lstatSync(fullPath);
 
@@ -169,6 +188,7 @@ jobs:
                     console.log(`Processing file: ${fullPath}`);
                     const content = fs.readFileSync(fullPath, 'utf8');
                     const base64Content = Buffer.from(content).toString('base64'); // 转换为 Base64
+                    // 请求翻译结果
                     const taskId = await translateFile(base64Content);
 
                     if (!taskId) {
@@ -181,7 +201,6 @@ jobs:
                     // 查询翻译结果
                     let result = null;
                     while (true) {
-                      await new Promise((resolve) => setTimeout(resolve, 5000)); // 每 5 秒查询一次任务状态
                       result = await queryTranslationResult(taskId);
 
                       if (result && result.Status === 'success') {
@@ -203,7 +222,10 @@ jobs:
                       console.log(`Translated file saved to: ${translatedPath}`);
                     }
                   }
+                 }
                 }
+                 // 每批处理后延时 1 秒
+                await new Promise((resolve) => setTimeout(resolve, 1000));
               }
 
               (async () => {
