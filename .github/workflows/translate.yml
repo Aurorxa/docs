@@ -10,20 +10,19 @@ on:
       source_dir:
         description: "Source directory containing Markdown files"
         required: false
-        default: 'docs/notes'
+        default: "docs/notes"
       target_dir:
         description: "Target directory for translated Markdown files"
         required: false
-        default: 'docs/en'
+        default: "docs/en"
       from_lang:
-        description: "Language to translate from (e.g.,zh-CHS)"
+        description: "Language to translate from (e.g.,zh)"
         required: false
-        default: 'zh-CHS'
+        default: "zh"
       to_lang:
         description: "Language to translate to (e.g., en)"
         required: false
-        default: 'en'
-
+        default: "en"
 
 jobs:
   translate:
@@ -32,18 +31,18 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-            fetch-depth: 1
+          fetch-depth: 1
       - name: Install Dependencies
         run: |
-           sudo apt-get update -y
-           sudo apt-get install -y tree
-           tree
+          sudo apt-get update -y
+          sudo apt-get install -y tree
+          tree
       - name: Debug Inputs
         run: |
-            echo "Source Directory: ${{ github.event.inputs.source_dir }}"
-            echo "Target Directory: ${{ github.event.inputs.target_dir }}"
-            echo "From Language: ${{ github.event.inputs.from_lang }}"
-            echo "To Language: ${{ github.event.inputs.to_lang }}"    
+          echo "Source Directory: ${{ github.event.inputs.source_dir }}"
+          echo "Target Directory: ${{ github.event.inputs.target_dir }}"
+          echo "From Language: ${{ github.event.inputs.from_lang }}"
+          echo "To Language: ${{ github.event.inputs.to_lang }}"
       - name: Ensure Target Directory Exists
         run: |
           if [ ! -d "${{ github.event.inputs.target_dir }}" ]; then
@@ -52,107 +51,159 @@ jobs:
           else
             echo "Target directory ${{ github.event.inputs.target_dir }} already exists."
           fi
+          # 复制原始目录的内容到目标目录
+          if [ -d "${{ github.event.inputs.source_dir }}" ]; then
+            cp -r "${{ github.event.inputs.source_dir }}"/* "${{ github.event.inputs.target_dir }}/"
+            echo "Contents of ${{ github.event.inputs.source_dir }} copied to ${{ github.event.inputs.target_dir }}."
+          else
+            echo "Source directory ${{ github.event.inputs.source_dir }} does not exist."
+            exit 1
+          fi
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.11.0  
-      - name: Install Axios for HTTP Requests
-        run: npm install axios
-      - name: Translate Markdown Files
+          node-version: 22.11.0
+      - name: Installation dependency
+        run: |
+          npm install tencentcloud-sdk-nodejs-tmt
+          npm install bottleneck
+      - name: Request Translate Markdown Files
         env:
           SOURCE_DIR: ${{ github.event.inputs.source_dir }}
           TARGET_DIR: ${{ github.event.inputs.target_dir }}
           FROM_LANG: ${{ github.event.inputs.from_lang }}
           TO_LANG: ${{ github.event.inputs.to_lang }}
-          YOUDAO_APP_KEY: ${{ secrets.YOUDAO_APP_KEY }}
-          YOUDAO_SECRET: ${{ secrets.YOUDAO_SECRET }}
+          Secret_Id: ${{ secrets.Tencent_Secret_Id }}
+          Secret_Key: ${{ secrets.Tencent_Secret_Key }}
+          region: ${{ secrets.Tencent_Region }}
         run: |
           node -e "
           const fs = require('fs');
           const path = require('path');
           const axios = require('axios');
           const crypto = require('crypto');
+          const tencentcloud = require('tencentcloud-sdk-nodejs');
 
+          # 参数
           const directoryPath = process.env.SOURCE_DIR ;
           const targetPath = process.env.TARGET_DIR ;
           const fromLang = process.env.FROM_LANG ;
           const toLang = process.env.TO_LANG ;
-          const appKey = process.env.YOUDAO_APP_KEY;
-          const secret = process.env.YOUDAO_SECRET;
+          const secretId = process.env.Secret_Id;
+          const secretKey = process.env.Secret_Key;
+
           console.log('directoryPath:', directoryPath);
           console.log('targetPath:', targetPath);
           console.log('fromLang:', fromLang);
           console.log('toLang:', toLang);
-          console.log('App Key:', appKey);
-          console.log('Secret:', secret);
+          console.log('secretId:', secretId);
+          console.log('secretKey:', secretKey);
 
-          function generateSign(query, salt) {
-            return crypto.createHash('md5').update(appKey + query + salt + secret).digest('hex');
-          }
+          const TmtClient = tencentcloud.tmt.v20180321.Client;
+          const clientConfig = {
+              credential: {
+                secretId
+                secretKey
+              },
+              region,
+              profile: {
+                httpProfile: {
+                  endpoint: "tmt.tencentcloudapi.com",
+                },
+              },
+          };  
+          // 实例化要请求产品的client对象,clientProfile是可选的
+          const client = new TmtClient(clientConfig);  
 
-          async function translateText(query) {
-            const salt = new Date().getTime();
-            const sign = generateSign(query, salt);
-            const url = 'https://openapi.youdao.com/api';
-
+          // 提交文件翻译任务
+          async function translateFile(content) {
             const params = {
-              q: query,
-              appKey: appKey,
-              salt: salt,
-              from: fromLang,
-              to: toLang,
-              sign: sign,
+              Source: fromLang,
+              Target: toLang,
+              DocumentType: 'markdown',
+              SourceType: 1,
+              Data: content,
             };
 
             try {
-              const response = await axios.get(url, { params });
-              if (response.data && response.data.translation) {
-                return response.data.translation.join('\\n');
-              } else {
-                console.error('Translation error:', response.data);
-                return '';
-              }
+              const response = await client.FileTranslate(params);
+              console.log('提交文件翻译任务的 response',response)
+              return response?.data?.taskId;
             } catch (err) {
-              console.error('HTTP request failed:', err.message);
-              return '';
+              console.error('Failed to submit translation request:', err.message);
+              return null;
             }
           }
 
-          async function translateMarkdownFiles(dir) {
-            const files = fs.readdirSync(dir);
+          // 查询翻译任务状态
+          async function queryTranslationResult(taskId) {
+            const params = { TaskId: taskId };
 
-            for (const file of files) {
-              const fullPath = path.join(dir, file);
-              const stat = fs.lstatSync(fullPath);
+            try {
+              const response = await client.GetFileTranslate(params);
+               console.log('查询翻译任务状态的 response',response)
+              return response;
+            } catch (err) {
+              console.error('Failed to query translation result:', err.message);
+              return null;
+            }
+          }
 
-              if (stat.isDirectory()) {
-                await translateMarkdownFiles(fullPath);
-              } else if (file.endsWith('.md')) {
-                const content = fs.readFileSync(fullPath, 'utf8');
-                const translatedPath = fullPath.replace(directoryPath, targetPath);
-                const translatedText = await translateText(content);
+          sync function processMarkdownFiles(dir) {
+                const files = fs.readdirSync(dir);
+                for (const file of files) {
+                  const fullPath = path.join(dir, file);
+                  const stat = fs.lstatSync(fullPath);
 
-                if (translatedText) {
-                  fs.mkdirSync(path.dirname(translatedPath), { recursive: true });
-                  fs.writeFileSync(translatedPath, translatedText, 'utf8');
-                  console.log(\`Translated \${fullPath} -> \${translatedPath}\`);
-                } else {
-                  console.error(\`Failed to translate \${fullPath}\`);
+                  if (stat.isDirectory()) {
+                    await processMarkdownFiles(fullPath);
+                  } else if (file.endsWith('.md')) {
+                    console.log(`Processing file: ${fullPath}`);
+                    const content = fs.readFileSync(fullPath, 'utf8');
+                    const base64Content = Buffer.from(content).toString('base64'); // 转换为 Base64
+                    const taskId = await translateFile(base64Content);
+
+                    if (!taskId) {
+                      console.error(`Failed to submit translation task for ${fullPath}`);
+                      continue;
+                    }
+
+                    console.log(`Translation task submitted for ${fullPath}, Task ID: ${taskId}`);
+
+                    // 查询翻译结果
+                    let result = null;
+                    while (true) {
+                      await new Promise((resolve) => setTimeout(resolve, 5000)); // 每 5 秒查询一次任务状态
+                      result = await queryTranslationResult(taskId);
+
+                      if (result && result.Status === 'success') {
+                        console.log(`Translation successful for ${fullPath}`);
+                        break;
+                      } else if (result && result.Status === 'fail') {
+                        console.error(`Translation failed for ${fullPath}`);
+                        break;
+                      } else {
+                        console.log(`Translation in progress for ${fullPath}...`);
+                      }
+                    }
+
+                    // 保存翻译结果
+                    if (result && result.FileData) {
+                      const translatedPath = fullPath.replace(directoryPath, targetPath);
+                      fs.mkdirSync(path.dirname(translatedPath), { recursive: true });
+                      fs.writeFileSync(translatedPath, Buffer.from(result.FileData, 'base64').toString('utf8'), 'utf8');
+                      console.log(`Translated file saved to: ${translatedPath}`);
+                    }
+                  }
                 }
               }
-            }
-          }
 
-          (async () => {
-            console.log(\`Translating files from \${directoryPath} to \${targetPath} (\${fromLang} -> \${toLang})\`);
-            await translateMarkdownFiles(directoryPath);
-          })();
-          "    
+              (async () => {
+                console.log(`Starting translation process from ${directoryPath} to ${targetPath}`);
+                await processMarkdownFiles(directoryPath);
+                console.log('Translation process completed.');
+              })();
+          "
       - name: 查看翻译后的文件
         run: |
-           tree
-       
- 
-    
-
-
+          tree

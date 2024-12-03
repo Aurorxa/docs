@@ -9,7 +9,7 @@
     "docs:cloudflare": "vitepress build docs --base /",
     "docs:preview": "vitepress preview docs"
   },
-  "type":"module",
+  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -23,11 +23,13 @@
   "dependencies": {
     "@fontsource/roboto": "^5.1.0",
     "@theojs/lumen": "^4.1.0",
+    "bottleneck": "^2.19.5",
     "busuanzi.pure.js": "^1.0.3",
     "dayjs": "1.11.13",
     "dotenv": "^16.4.5",
     "font-pingfang-sc-font-weight-improved": "^1.0.7",
     "medium-zoom": "^1.1.0",
+    "tencentcloud-sdk-nodejs": "^4.0.984",
     "vitepress-markdown-timeline": "^1.2.1",
     "vitepress-plugin-comment-with-giscus": "^1.1.15",
     "vue-router": "^4.4.5"
