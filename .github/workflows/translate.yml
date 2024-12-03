@@ -105,7 +105,7 @@ jobs:
           const TmtClient = tencentcloud.tmt.v20180321.Client;
           const clientConfig = {
               credential: {
-                secretId
+                secretId,
                 secretKey
               },
               region,
