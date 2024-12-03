@@ -9,19 +9,19 @@ on:
     inputs:
       source_dir:
         description: "Source directory containing Markdown files"
-        required: true
+        required: false
         default: 'docs/notes'
       target_dir:
         description: "Target directory for translated Markdown files"
-        required: true
+        required: false
         default: 'docs/en'
       from_lang:
         description: "Language to translate from (e.g.,zh-CHS)"
-        required: true
+        required: false
         default: 'zh-CHS'
       to_lang:
         description: "Language to translate to (e.g., en)"
-        required: true
+        required: false
         default: 'en'
 
 
@@ -40,7 +40,10 @@ jobs:
            tree
       - name: Debug Inputs
         run: |
-          echo '${{ github.event.inputs.target_dir }}'       
+            echo "Source Directory: ${{ github.event.inputs.source_dir }}"
+            echo "Target Directory: ${{ github.event.inputs.target_dir }}"
+            echo "From Language: ${{ github.event.inputs.from_lang }}"
+            echo "To Language: ${{ github.event.inputs.to_lang }}"    
       - name: Ensure Target Directory Exists
         run: |
           if [ ! -d "${{ github.event.inputs.target_dir }}" ]; then
